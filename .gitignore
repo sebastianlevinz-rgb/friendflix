@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local storage (uploads, DB, output videos)
+# Railway mounts a persistent volume at /app/storage
+/storage/

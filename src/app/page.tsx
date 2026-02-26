@@ -1,65 +1,116 @@
-import Image from "next/image";
+import Link from 'next/link';
+import { Film, Users, Sparkles, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+const steps = [
+  { icon: Users, label: 'Subí fotos de tus amigos', desc: 'De 1 a 3 personajes, con sus nombres' },
+  { icon: Film, label: 'Elegí un género', desc: 'Thriller, mockumentary, comedia y más' },
+  { icon: Sparkles, label: 'La IA genera el trailer', desc: 'Claude escribe el guión, Kling genera el video' },
+  { icon: Download, label: 'Descargá y compartí', desc: 'Trailer de ~60s listo para compartir' },
+];
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
+      {/* Hero */}
+      <section className="flex flex-col items-center justify-center text-center px-4 pt-20 pb-16">
+        <div className="mb-4 text-sm tracking-[0.3em] uppercase text-amber-500/80">
+          Powered by Claude + Kling AI
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tight">
+          Friend<span className="text-[#E8793A]">Flix</span>
+        </h1>
+        <p className="text-xl md:text-2xl text-zinc-400 max-w-2xl mb-10 leading-relaxed">
+          Convertí a tus amigos en protagonistas de un{' '}
+          <span className="text-white font-semibold">trailer cinematográfico</span>{' '}
+          generado con inteligencia artificial.
+        </p>
+        <Link href="/create">
+          <Button
+            size="lg"
+            className="bg-[#E8793A] hover:bg-[#d06830] text-white font-bold text-lg px-10 py-6 rounded-full transition-all hover:scale-105 shadow-lg shadow-orange-500/20"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Crear mi película
+          </Button>
+        </Link>
+
+        {/* Film strip decoration */}
+        <div className="mt-16 w-full max-w-3xl">
+          <div className="flex gap-2 overflow-hidden opacity-30">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex-1 h-24 bg-zinc-800 rounded-sm border border-zinc-700 flex-shrink-0"
+              />
+            ))}
+          </div>
         </div>
-      </main>
-    </div>
+      </section>
+
+      {/* How it works */}
+      <section className="px-4 py-16 max-w-4xl mx-auto w-full">
+        <h2 className="text-2xl font-bold text-center mb-12 text-zinc-300 tracking-wide uppercase text-sm">
+          Cómo funciona
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {steps.map((step, i) => (
+            <div
+              key={i}
+              className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 flex gap-4 hover:border-zinc-700 transition-colors"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#E8793A]/10 border border-[#E8793A]/20 flex items-center justify-center flex-shrink-0">
+                <step.icon className="w-5 h-5 text-[#E8793A]" />
+              </div>
+              <div>
+                <div className="text-xs text-zinc-500 mb-1">Paso {i + 1}</div>
+                <div className="font-semibold text-white mb-1">{step.label}</div>
+                <div className="text-sm text-zinc-400">{step.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Genres preview */}
+      <section className="px-4 py-16 max-w-4xl mx-auto w-full">
+        <h2 className="text-2xl font-bold text-center mb-12 text-zinc-300 tracking-wide uppercase text-sm">
+          Géneros disponibles
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            { name: 'Acción / Thriller', subtitle: 'Estilo Fauda', emoji: '🔫', color: 'from-blue-900 to-zinc-900' },
+            { name: 'Mockumentary', subtitle: 'Estilo The Office', emoji: '🎥', color: 'from-amber-900 to-zinc-900' },
+            { name: 'Comedia', subtitle: 'Situación absurda', emoji: '😂', color: 'from-green-900 to-zinc-900' },
+          ].map((genre, i) => (
+            <div
+              key={i}
+              className={`bg-gradient-to-br ${genre.color} border border-zinc-800 rounded-2xl p-6 text-center hover:border-zinc-600 transition-all hover:scale-105 cursor-pointer`}
+            >
+              <div className="text-4xl mb-3">{genre.emoji}</div>
+              <div className="font-bold text-white">{genre.name}</div>
+              <div className="text-sm text-zinc-400 mt-1">{genre.subtitle}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="px-4 py-16 text-center">
+        <Link href="/create">
+          <Button
+            size="lg"
+            className="bg-[#E8793A] hover:bg-[#d06830] text-white font-bold text-lg px-10 py-6 rounded-full transition-all hover:scale-105 shadow-lg shadow-orange-500/20"
+          >
+            Empezar ahora — es gratis
+          </Button>
+        </Link>
+        <p className="text-zinc-600 text-sm mt-4">Sin registro. Sin pagos. Solo magia.</p>
+      </section>
+
+      {/* Footer */}
+      <footer className="text-center text-zinc-700 text-sm py-8 border-t border-zinc-900">
+        FriendFlix © 2025 · Powered by Claude + Kling AI
+      </footer>
+    </main>
   );
 }
