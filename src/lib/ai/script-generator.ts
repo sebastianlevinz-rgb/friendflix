@@ -9,7 +9,7 @@ const client = new Anthropic({
 export async function generateScript(
   genre: GenreDefinition,
   characters: CharacterData[],
-  customPrompt?: string
+  customPrompt?: string,
 ): Promise<Script> {
   const systemPrompt = buildSystemPrompt(genre);
   const userPrompt = buildUserPrompt(characters, genre, customPrompt);
@@ -44,11 +44,13 @@ export async function generateScript(
     throw new Error('Invalid script structure from Claude');
   }
 
-  // Ensure durations are valid (5 or 10 seconds)
-  script.scenes = script.scenes.map(scene => ({
-    ...scene,
-    duration: scene.duration >= 8 ? 10 : 5,
-  }));
+  // Enforce scene count and valid durations
+  script.scenes = script.scenes
+    .slice(0, genre.sceneCount)
+    .map(scene => ({
+      ...scene,
+      duration: scene.duration >= 8 ? 10 : 5,
+    }));
 
   return script;
 }
