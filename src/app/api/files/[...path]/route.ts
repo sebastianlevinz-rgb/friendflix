@@ -10,7 +10,13 @@ export async function GET(
 ) {
   try {
     const { path: pathSegments } = await params;
-    const filePath = path.join(process.cwd(), 'storage', ...pathSegments);
+    const storageRoot = path.join(process.cwd(), 'storage');
+    const filePath = path.normalize(path.join(storageRoot, ...pathSegments));
+
+    // Prevent path traversal: resolved path must stay inside storage/
+    if (!filePath.startsWith(storageRoot + path.sep) && filePath !== storageRoot) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const buffer = await readFile(filePath);
 

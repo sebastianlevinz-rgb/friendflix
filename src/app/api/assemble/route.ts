@@ -9,8 +9,9 @@ import { getGenre } from '@/lib/genres';
 import type { Script } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
+  let projectId: string | undefined;
   try {
-    const { projectId } = await req.json();
+    ({ projectId } = await req.json());
 
     if (!projectId) {
       return NextResponse.json({ error: 'projectId required' }, { status: 400 });
@@ -55,9 +56,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ outputUrl });
   } catch (error) {
     console.error('Assembly error:', error);
-    await db.update(projects)
-      .set({ status: 'failed', updatedAt: Math.floor(Date.now() / 1000) })
-      .where(eq(projects.id, (await req.json().catch(() => ({}))).projectId || ''));
+    if (projectId) {
+      await db.update(projects)
+        .set({ status: 'failed', updatedAt: Math.floor(Date.now() / 1000) })
+        .where(eq(projects.id, projectId));
+    }
     return NextResponse.json({ error: 'Assembly failed' }, { status: 500 });
   }
 }

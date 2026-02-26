@@ -88,16 +88,24 @@ export async function assembleTrailer(
     );
   }
 
+  // Resolve resolution from genre aspect ratio
+  const resolutionMap: Record<string, string> = {
+    '16:9': '1920x1080',
+    '9:16': '1080x1920',
+    '1:1':  '1080x1080',
+  };
+  const resolution = resolutionMap[genre.aspectRatio] || '1920x1080';
+
   // Step 3: Add title card at the beginning (3 seconds)
   const titleCardPath = path.join(outputDir, 'title_card.mp4');
   const titleText = genre.titleCard.text.replace(/'/g, "\\'").replace(/:/g, '\\:');
 
   await execFFmpeg(
     ffmpeg()
-      .input('color=black:s=1920x1080:d=3')
+      .input(`color=black:s=${resolution}:d=3`)
       .inputOptions(['-f', 'lavfi'])
       .videoFilter(
-        `drawtext=text='${titleText}':fontcolor=red:fontsize=72:x=(w-text_w)/2:y=(h-text_h)/2:font=Impact`
+        `drawtext=text='${titleText}':fontcolor=red:fontsize=72:x=(w-text_w)/2:y=(h-text_h)/2`
       )
       .outputOptions(['-t', '3', '-an'])
       .output(titleCardPath)
@@ -109,10 +117,10 @@ export async function assembleTrailer(
 
   await execFFmpeg(
     ffmpeg()
-      .input('color=black:s=1920x1080:d=3')
+      .input(`color=black:s=${resolution}:d=3`)
       .inputOptions(['-f', 'lavfi'])
       .videoFilter(
-        `drawtext=text='${closingText}':fontcolor=white:fontsize=64:x=(w-text_w)/2:y=(h-text_h)/2:font=Impact`
+        `drawtext=text='${closingText}':fontcolor=white:fontsize=64:x=(w-text_w)/2:y=(h-text_h)/2`
       )
       .outputOptions(['-t', '3', '-an'])
       .output(closingCardPath)

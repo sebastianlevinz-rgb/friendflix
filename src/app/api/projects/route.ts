@@ -67,14 +67,18 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
-    const { id, ...updates } = body;
+    const { id, customPrompt } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Project ID required' }, { status: 400 });
     }
 
+    // Only allow updating fields the user can legitimately change
+    const allowed: Record<string, unknown> = { updatedAt: Math.floor(Date.now() / 1000) };
+    if (customPrompt !== undefined) allowed.customPrompt = customPrompt;
+
     await db.update(projects)
-      .set({ ...updates, updatedAt: Math.floor(Date.now() / 1000) })
+      .set(allowed)
       .where(eq(projects.id, id));
 
     return NextResponse.json({ success: true });

@@ -8,8 +8,9 @@ import { generateScript } from '@/lib/ai/script-generator';
 import { getGenre } from '@/lib/genres';
 
 export async function POST(req: NextRequest) {
+  let projectId: string | undefined;
   try {
-    const { projectId } = await req.json();
+    ({ projectId } = await req.json());
 
     if (!projectId) {
       return NextResponse.json({ error: 'projectId required' }, { status: 400 });
@@ -56,9 +57,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ script });
   } catch (error) {
     console.error('Script generation error:', error);
-    await db.update(projects)
-      .set({ status: 'failed', updatedAt: Math.floor(Date.now() / 1000) })
-      .where(eq(projects.id, (await req.json().catch(() => ({}))).projectId || ''));
+    if (projectId) {
+      await db.update(projects)
+        .set({ status: 'failed', updatedAt: Math.floor(Date.now() / 1000) })
+        .where(eq(projects.id, projectId));
+    }
     return NextResponse.json({ error: 'Script generation failed' }, { status: 500 });
   }
 }
