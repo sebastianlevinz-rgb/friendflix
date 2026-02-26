@@ -39,7 +39,7 @@ export async function generateScene(
     console.log(`  Element for ${charName}: ${frontalUrl.substring(0, 80)}...`);
   }
 
-  const duration: '5' | '10' = scene.duration >= 8 ? '10' : '5';
+  const duration: '5' = '5'; // Always 5s to minimize cost
 
   const request: KlingRequest = {
     prompt,
