@@ -18,7 +18,7 @@ export default function Home() {
           Powered by Claude + Kling AI
         </div>
         <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tight">
-          Friend<span className="text-[#E8793A]">Flix</span>
+          Friend<span className="text-[#E8793A]">Flix</span><span className="text-zinc-600 text-2xl md:text-3xl font-light ml-3 align-top mt-4 inline-block">v2</span>
         </h1>
         <p className="text-xl md:text-2xl text-zinc-400 max-w-2xl mb-10 leading-relaxed">
           Convertí a tus amigos en protagonistas de un{' '}
