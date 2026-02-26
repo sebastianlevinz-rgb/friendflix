@@ -2,7 +2,7 @@ import * as fal from '@fal-ai/serverless-client';
 
 fal.config({ credentials: process.env.FAL_KEY! });
 
-export const KLING_MODEL = 'fal-ai/kling-video/v3/standard/text-to-video';
+export const KLING_MODEL = 'fal-ai/kling-video/v3/pro/text-to-video';
 
 export interface KlingRequest {
   prompt: string;
