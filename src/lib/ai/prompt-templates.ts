@@ -55,5 +55,5 @@ Descripción del género: ${genre.description}
 
 ${customPrompt ? `Premisa del usuario: ${customPrompt}` : 'Inventá una premisa divertida y original basada en el género.'}
 
-Escribí el guión completo en el formato JSON especificado. Sé creativo, cinematográfico, y asegurate de que cada personaje tenga al menos 2 escenas protagónicas.`;
+Escribí el guión completo en el formato JSON especificado. Sé creativo y cinematográfico. Con una sola escena, hacé que sea el momento más impactante e icónico posible.`;
 }
