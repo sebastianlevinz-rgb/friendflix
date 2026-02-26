@@ -1,5 +1,6 @@
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegStatic from 'ffmpeg-static';
+import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 import type { Scene } from '../db/schema';
@@ -89,12 +90,19 @@ export async function assembleTrailer(
   }
 
   // Resolve resolution from genre aspect ratio
-  const resolutionMap: Record<string, string> = {
-    '16:9': '1920x1080',
-    '9:16': '1080x1920',
-    '1:1':  '1080x1080',
+  const resolutionMap: Record<string, [number, number]> = {
+    '16:9': [1920, 1080],
+    '9:16': [1080, 1920],
+    '1:1':  [1080, 1080],
   };
-  const resolution = resolutionMap[genre.aspectRatio] || '1920x1080';
+  const [cardW, cardH] = resolutionMap[genre.aspectRatio] || [1920, 1080];
+
+  // Generate a solid black JPEG to use as base for title/closing cards.
+  // This avoids the lavfi input format which is not compiled into ffmpeg-static.
+  const blackJpegPath = path.join(outputDir, 'black.jpg');
+  await sharp({
+    create: { width: cardW, height: cardH, channels: 3, background: { r: 0, g: 0, b: 0 } },
+  }).jpeg().toFile(blackJpegPath);
 
   // Step 3: Add title card at the beginning (3 seconds)
   const titleCardPath = path.join(outputDir, 'title_card.mp4');
@@ -102,12 +110,12 @@ export async function assembleTrailer(
 
   await execFFmpeg(
     ffmpeg()
-      .input(`color=black:s=${resolution}:d=3`)
-      .inputOptions(['-f', 'lavfi'])
+      .input(blackJpegPath)
+      .inputOptions(['-loop', '1', '-framerate', '25'])
       .videoFilter(
         `drawtext=text='${titleText}':fontcolor=red:fontsize=72:x=(w-text_w)/2:y=(h-text_h)/2`
       )
-      .outputOptions(['-t', '3', '-an'])
+      .outputOptions(['-t', '3', '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p'])
       .output(titleCardPath)
   );
 
@@ -117,12 +125,12 @@ export async function assembleTrailer(
 
   await execFFmpeg(
     ffmpeg()
-      .input(`color=black:s=${resolution}:d=3`)
-      .inputOptions(['-f', 'lavfi'])
+      .input(blackJpegPath)
+      .inputOptions(['-loop', '1', '-framerate', '25'])
       .videoFilter(
         `drawtext=text='${closingText}':fontcolor=white:fontsize=64:x=(w-text_w)/2:y=(h-text_h)/2`
       )
-      .outputOptions(['-t', '3', '-an'])
+      .outputOptions(['-t', '3', '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p'])
       .output(closingCardPath)
   );
 
@@ -145,7 +153,7 @@ export async function assembleTrailer(
 
   // Cleanup temp files
   try {
-    [tempConcat, titleCardPath, closingCardPath, concatFile, finalConcatFile].forEach(f => {
+    [tempConcat, titleCardPath, closingCardPath, concatFile, finalConcatFile, blackJpegPath].forEach(f => {
       if (fs.existsSync(f) && f !== tempWithMusic) fs.unlinkSync(f);
     });
     if (tempWithMusic !== tempConcat && fs.existsSync(tempWithMusic)) {
