@@ -6,7 +6,6 @@ import { projects, characters, scenes } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { generateScript } from '@/lib/ai/script-generator';
 import { generateScene } from '@/lib/video/scene-generator';
-import { assembleTrailer } from '@/lib/video/assembler';
 import { processCharacterPhotos } from '@/lib/image/background-removal';
 import { getGenre } from '@/lib/genres';
 import type { Script } from '@/lib/types';
@@ -121,11 +120,7 @@ async function runOrchestration(projectId: string) {
       }
     }
 
-    // Step 5: Assemble trailer
-    await db.update(projects)
-      .set({ status: 'assembling', updatedAt: Math.floor(Date.now() / 1000) })
-      .where(eq(projects.id, projectId));
-
+    // Step 5: Use the generated scene video directly as output
     const completedScenes = await db.select().from(scenes)
       .where(eq(scenes.projectId, projectId));
     const readyScenes = completedScenes.filter(s => s.status === 'complete' && s.videoUrl);
@@ -134,7 +129,8 @@ async function runOrchestration(projectId: string) {
       throw new Error('No scenes completed successfully');
     }
 
-    const outputUrl = await assembleTrailer(projectId, readyScenes, genre, script);
+    // Use the first (and typically only) completed scene video as the output
+    const outputUrl = readyScenes.sort((a, b) => a.orderIndex - b.orderIndex)[0].videoUrl!;
 
     await db.update(projects)
       .set({
