@@ -97,39 +97,40 @@ export async function assembleTrailer(
   };
   const [cardW, cardH] = resolutionMap[genre.aspectRatio] || [1920, 1080];
 
-  // Generate a solid black JPEG to use as base for title/closing cards.
-  // This avoids the lavfi input format which is not compiled into ffmpeg-static.
-  const blackJpegPath = path.join(outputDir, 'black.jpg');
-  await sharp({
-    create: { width: cardW, height: cardH, channels: 3, background: { r: 0, g: 0, b: 0 } },
-  }).jpeg().toFile(blackJpegPath);
+  // Generate title/closing card images using sharp+SVG — avoids drawtext
+  // (requires libfreetype) and lavfi (not compiled into ffmpeg-static).
+  async function makeCardImage(text: string, color: string, destPath: string) {
+    const fontSize = Math.round(cardW * 0.04);
+    const svg = `<svg width="${cardW}" height="${cardH}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="black"/>
+      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+        font-family="sans-serif" font-weight="bold" font-size="${fontSize}"
+        fill="${color}">${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</text>
+    </svg>`;
+    await sharp(Buffer.from(svg)).jpeg({ quality: 95 }).toFile(destPath);
+  }
 
-  // Step 3: Add title card at the beginning (3 seconds)
+  const titleJpgPath = path.join(outputDir, 'title_card.jpg');
+  const closingJpgPath = path.join(outputDir, 'closing_card.jpg');
+
+  await makeCardImage(genre.titleCard.text, 'red', titleJpgPath);
+  await makeCardImage(script.closingCard?.text || 'FIN', 'white', closingJpgPath);
+
+  // Convert each card image to a 3-second silent video (no drawtext filter needed)
   const titleCardPath = path.join(outputDir, 'title_card.mp4');
-  const titleText = genre.titleCard.text.replace(/'/g, "\\'").replace(/:/g, '\\:');
-
   await execFFmpeg(
     ffmpeg()
-      .input(blackJpegPath)
+      .input(titleJpgPath)
       .inputOptions(['-loop', '1', '-framerate', '25'])
-      .videoFilter(
-        `drawtext=text='${titleText}':fontcolor=red:fontsize=72:x=(w-text_w)/2:y=(h-text_h)/2`
-      )
       .outputOptions(['-t', '3', '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p'])
       .output(titleCardPath)
   );
 
-  // Step 4: Add closing card (3 seconds)
   const closingCardPath = path.join(outputDir, 'closing_card.mp4');
-  const closingText = (script.closingCard?.text || 'FIN').replace(/'/g, "\\'").replace(/:/g, '\\:');
-
   await execFFmpeg(
     ffmpeg()
-      .input(blackJpegPath)
+      .input(closingJpgPath)
       .inputOptions(['-loop', '1', '-framerate', '25'])
-      .videoFilter(
-        `drawtext=text='${closingText}':fontcolor=white:fontsize=64:x=(w-text_w)/2:y=(h-text_h)/2`
-      )
       .outputOptions(['-t', '3', '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p'])
       .output(closingCardPath)
   );
@@ -153,7 +154,7 @@ export async function assembleTrailer(
 
   // Cleanup temp files
   try {
-    [tempConcat, titleCardPath, closingCardPath, concatFile, finalConcatFile, blackJpegPath].forEach(f => {
+    [tempConcat, titleCardPath, closingCardPath, titleJpgPath, closingJpgPath, concatFile, finalConcatFile].forEach(f => {
       if (fs.existsSync(f) && f !== tempWithMusic) fs.unlinkSync(f);
     });
     if (tempWithMusic !== tempConcat && fs.existsSync(tempWithMusic)) {
