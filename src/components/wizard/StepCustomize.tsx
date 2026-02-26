@@ -87,7 +87,7 @@ export default function StepCustomize({
 
       {/* Cost notice */}
       <div className="bg-amber-950/20 border border-amber-900/30 rounded-xl p-3 mb-5 text-xs text-amber-500/70">
-        <span className="font-semibold">Costo estimado:</span> ~$10-15 en créditos de Kling 3.0 (7 escenas × ~$1.50 c/u)
+        <span className="font-semibold">Costo estimado:</span> ~$1.50 en créditos de Kling 3.0 (1 escena × ~$1.50)
       </div>
 
       {error && (
